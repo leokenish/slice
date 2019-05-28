@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+<script src ="js/jquery-3.3.1.min.js"></script>
+<script src ="js/gateway.js"></script>
+<script src ="js/config.js"></script>
+<link href="css/gateway.css" rel="stylesheet">
+<link rel="shortcut icon" type="image/png" href="../images/marjoram.ico"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+<title>badgateway</title>
+</head>
+<body>
+ <div id="search">
+  <div class="all"><i class="fas fa-arrow-circle-down"></i></div>
+  <div class="keywordlist">
+    <span class="keyword blue">ERP</span>
+    <span class="keyword green">5G</span>
+    <span class="keyword red">javascript</span>  
+    <span class="keyword blue">ERP</span>
+    <span class="keyword green">5G</span>
+    <span class="keyword red">javascript</span> 
+    <span class="keyword blue">ERP</span>
+    <span class="keyword green">5G</span>
+    <span class="keyword red">javascript</span>  
+    <span class="keyword blue">ERP</span>
+    <span class="keyword green">5G</span>
+    <span class="keyword red">javascript</span>
+  </div>
+ </div>
+ <div id="list">
+    <div class="line">
+        <div class="img"></div>
+        <div class="info">
+          <span class="flag">&nbsp;</span>
+          <div class="title"></div>
+          <div class="site"></div>
+          <div class="content"></div>
+        </div>
+    </div> 
+ </div>
+<div class="foot">Copyright 2019.NGY ALL RIGHTS RESERVED.</div> 
+</body>
+<script type="text/javascript">
+var req = [];
+var date = new Date();
+var $keywordlist = $(".keywordlist");
+var $keyword = $(".keyword");
+var $list = $("#list");
+var $linetmp = $(".line");
+var $all = $(".all");
+var $font = $("i");
+var $foot = $(".foot");
+var allcnt = 0;
+var vtop = -40;
+var vopacity = 0;
+var sopacity = 0;
+var position;
+PARAMS.sort += "date,date:r:" + date.beforeDate(10)+ ":" + date.Today();
+$(document).ready(function(){
+  animate(-80, 0);
+});
+$keyword.on('click', function(){
+  callAjax(this, Loader.Pop());
+  $foot.css('position','relative');
+  $foot.css('margin','50px 0px');
+  $foot.css('bottom','0px');
+}); 
+
+$all.click(function(){
+  if(!!(allcnt%2)){
+    $font.removeClass('fa-arrow-circle-up');
+    $font.addClass('fa-arrow-circle-down');  
+    animate(-80, 0);
+  }
+  else{
+    $font.removeClass('fa-arrow-circle-down');
+    $font.addClass('fa-arrow-circle-up');
+    animate(4, 1);
+  }
+  allcnt += 1;
+});
+
+function animate(stop, sopacity){
+  $keywordlist.animate({top: stop, opacity: sopacity}, {duration:'800'}, 'linear');
+  $keyword.animate({top: stop, opacity: sopacity}, {duration:'1000'}, 'linear');
+}
+
+function callAjax(that, POP){
+  var items = [];
+  var color = $(that).attr('class').replace("keyword ", "");
+  var ktext = $(that).text();
+  var ajax = Object.create(_Ajax.prototype);
+  $list.html('');
+  PARAMS.q = $(that).text();
+  ajax.url = PARAMS.url;
+  ajax.async = true;
+  ajax.param = {"key":PARAMS.key, "cx":PARAMS.cx, "q":PARAMS.q, "cr":PARAMS.cr, "lr":PARAMS.lr, "num":PARAMS.num, "sort":PARAMS.sort};
+  ajax.Call().addEventListener("load", function(){
+    items = items.concat(JSON.parse(this.responseText).items);
+    showList(items, color, ktext);
+    if(!!POP){
+      Loader.Close();
+      $foot.css('display','block');
+    }
+  });
+}
+function showList(items, color, ktext){
+if(items.length <= 1){
+  $line = $linetmp.clone();
+  $line.html('');
+  $line.text('검색결과가 없습니다.');
+  $line.addClass('noresult');
+  $list.append($line);
+  return false;
+}
+for(var i in items){
+  $line = $linetmp.clone();
+          $line.attr("data-url",items[i].link);
+          if(!!items[i].pagemap.cse_thumbnail){ 
+            var $img = $line.find(".img");
+                $img.addClass('thumbnail');
+                $img.css('background-image','url(' + items[i].pagemap.cse_thumbnail[0].src + ')');
+                $img.after('<div class="gap">&nbsp;</div>');
+            var $info = $line.find(".info");
+                $info.css('width','80vw');
+           }
+          $line.find(".title").text(items[i].title); 
+          $line.find(".site").text(items[i].displayLink);  
+          $line.find(".content").text(items[i].snippet); 
+          $line.find(".flag").css('background-color',color);
+          $line.find(".flag").text(ktext);
+  $list.append($line);
+  $line.slideToggle('slow');
+}
+$(".line").on('click',function(){
+  var url = $(this).attr('data-url');
+  window.open(url);  
+});
+}
+
+
+</script>
+</html>
